@@ -17,7 +17,8 @@ Scene::Scene()
 	_lightPosition = glm::vec3(10, 10, 0);
 
 	// Create a game object
-	_physics_object = new GameObject();
+	_dynamic_object = new DynamicObject();
+	_kinematics_object = new KinematicsObject();
 	_physics_object2 = new GameObject();
 	// Create a game level object
 	_level = new GameObject();
@@ -66,7 +67,8 @@ Scene::Scene()
 	// If you change the light's position you need to call this again
 	objectMaterial->SetLightPosition(_lightPosition);
 	// Tell the level object to use this material
-	_physics_object->SetMaterial(objectMaterial);
+	_kinematics_object->SetMaterial(objectMaterial);
+	_dynamic_object->SetMaterial(objectMaterial);
 	_physics_object2->SetMaterial(objectMaterial);
 
 	// Set the geometry for the object
@@ -74,16 +76,25 @@ Scene::Scene()
 	// Load from OBJ file. This must have triangulated geometry
 	modelMesh->LoadOBJ("assets/models/sphere.obj");
 	// Tell the game object to use this mesh
-	_physics_object->SetMesh(modelMesh);
-	_physics_object->SetPosition(0.0f, 5.0f, 0.0f);
-	_physics_object->SetScale(0.3f, 0.3f, 0.3f);
+	//Dynamic Object
+	_dynamic_object->SetMesh(modelMesh);
+	_dynamic_object->SetPosition(glm::vec3(-3.0f, 10.0f, 0.0f));
+	_dynamic_object->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
+	_dynamic_object->SetMass(2.0f);
+	_dynamic_object->SetBoundingRadius(_dynamic_object->GetScale());
 
+	//Kinematics Object 
+	_kinematics_object->SetMesh(modelMesh);
+	_kinematics_object->SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
+	_kinematics_object->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
+
+	//Physics Object (Hard coded motion)
 	_physics_object2->SetMesh(modelMesh);
 	_physics_object2->SetPosition(3.0f, 50.0f, 0.0f);
 	_physics_object2->SetScale(0.5f, 0.5f, 0.5f);
 	_physics_object2->SetMass(1.0f);
-	_physics_object2->SetInitialVelocity(0.1f, 0.0f, 0.0f);
-	_physics_object2->SetBounciness(0.6f);
+	_physics_object2->SetInitialVelocity(0.0f, 0.0f, 0.0f);
+	_physics_object2->SetBounciness(0.9f);
 
 	
 }
@@ -91,13 +102,13 @@ Scene::Scene()
 Scene::~Scene()
 {
 	// You should neatly clean everything up here
-	delete _physics_object;
+	delete _kinematics_object;
 	delete _level;
 	delete _camera;
 	delete _physics_object2;
+	delete _dynamic_object;
 }
 
-float timeStep = 0;
 bool travellingDown = true;
 
 void Scene::Update(float deltaTs, Input* input)
@@ -110,21 +121,9 @@ void Scene::Update(float deltaTs, Input* input)
 	}
 	if (_simulation_start == true)
 	{
-
-		glm::vec3 pos = _physics_object->GetPosition();
-		
 		glm::vec3 pos2 = _physics_object2->GetPosition();
 
 		glm::vec3 vel2 = _physics_object2->GetVelocity();
-
-		if (pos.y <= _level->GetPosition().y + 0.3f)
-		{
-			pos.y = _level->GetPosition().y + 0.3f;
-		}
-		else 
-		{ 
-			pos += glm::vec3(0.0, -deltaTs / 2, 0.0); 
-		}
 
 		if (pos2.y <= _level->GetPosition().y + 0.5f && travellingDown == true)
 		{
@@ -135,14 +134,14 @@ void Scene::Update(float deltaTs, Input* input)
 		if (travellingDown == true)
 		{ 
 			//std::cout << "Runnign";
-			vel2.y += 0.001f;
+			vel2.y += deltaTs / 100;
 			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * -9.8 * 0.5, 0.0);
 		}
 		//Moving Up
 		if (travellingDown == false)
 		{
 			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * 9.8 * 0.5, 0.0);
-			vel2.y -= 0.001f;
+			vel2.y -= deltaTs / 100;
 			if (vel2.y <= 0)
 			{
 				vel2.y = 0;
@@ -150,11 +149,13 @@ void Scene::Update(float deltaTs, Input* input)
 			}
 		}
 
-		_physics_object2->SetTheVelocity(vel2);
-		_physics_object->SetPosition(pos);
+		_physics_object2->SetVelocity(vel2);
 		_physics_object2->SetPosition(pos2);
+		_kinematics_object->StartSimulation(_simulation_start);
+		_dynamic_object->StartSimulation(_simulation_start);
 	}
-	_physics_object->Update(deltaTs);
+	_kinematics_object->Update(deltaTs);
+	_dynamic_object->Update(deltaTs);
 	_physics_object2->Update(deltaTs);
 	_level->Update(deltaTs);
 	_camera->Update(input);
@@ -167,7 +168,8 @@ void Scene::Update(float deltaTs, Input* input)
 void Scene::Draw()
 {
 	// Draw objects, giving the camera's position and projection
-	_physics_object->Draw(_viewMatrix, _projMatrix);
+	_dynamic_object->Draw(_viewMatrix, _projMatrix);
+	_kinematics_object->Draw(_viewMatrix, _projMatrix);
 	_physics_object2->Draw(_viewMatrix, _projMatrix);
 	_level->Draw(_viewMatrix, _projMatrix);
 

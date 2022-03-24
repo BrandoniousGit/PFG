@@ -12,7 +12,7 @@ Camera::Camera()
 	_cameraAngleX = 90.0f;
 	_cameraAngleY = 0.0f;
 
-	speed = 0.1f;
+	speed = 0.5f;
 	mouseSpeed = 0.005f;
 
 	oldMousePosition = glm::vec2(0.0, 0.0);

@@ -54,7 +54,7 @@ public:
 
 	void SetInitialVelocity(float vX, float vY, float vZ) { _velocity.x = vX, _velocity.y = vY, _velocity.z = vZ; }
 
-	void SetTheVelocity(glm::vec3 velValue) { _velocity = velValue; }
+	void SetVelocity(glm::vec3 velValue) { _velocity = velValue; }
 
 	glm::vec3 GetVelocity() { return _velocity; }
 

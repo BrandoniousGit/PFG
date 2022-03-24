@@ -15,6 +15,7 @@ std::vector<int> Input::upKeys;
 
 Input::~Input()
 {
+
 }
 
 glm::vec2 Input::getMouseDelta()
