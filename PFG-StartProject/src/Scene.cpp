@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Utility.h"
 
 
 /*! \brief Brief description.
@@ -18,6 +19,7 @@ Scene::Scene()
 
 	// Create a game object
 	_dynamic_object = new DynamicObject();
+	_dynamic_object2 = new DynamicObject();
 	_kinematics_object = new KinematicsObject();
 	_physics_object2 = new GameObject();
 	// Create a game level object
@@ -69,6 +71,7 @@ Scene::Scene()
 	// Tell the level object to use this material
 	_kinematics_object->SetMaterial(objectMaterial);
 	_dynamic_object->SetMaterial(objectMaterial);
+	_dynamic_object2->SetMaterial(objectMaterial);
 	_physics_object2->SetMaterial(objectMaterial);
 
 	// Set the geometry for the object
@@ -82,6 +85,13 @@ Scene::Scene()
 	_dynamic_object->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
 	_dynamic_object->SetMass(2.0f);
 	_dynamic_object->SetBoundingRadius(_dynamic_object->GetScale());
+
+	//Another Dynamic Object
+	_dynamic_object2->SetMesh(modelMesh);
+	_dynamic_object2->SetPosition(glm::vec3(-3.2f, 15.0f, 0.0f));
+	_dynamic_object2->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	_dynamic_object2->SetMass(3.0f);
+	_dynamic_object2->SetBoundingRadius(_dynamic_object->GetScale());
 
 	//Kinematics Object 
 	_kinematics_object->SetMesh(modelMesh);
@@ -107,6 +117,7 @@ Scene::~Scene()
 	delete _camera;
 	delete _physics_object2;
 	delete _dynamic_object;
+	delete _dynamic_object2;
 }
 
 bool travellingDown = true;
@@ -133,14 +144,13 @@ void Scene::Update(float deltaTs, Input* input)
 		//Moving Down
 		if (travellingDown == true)
 		{ 
-			//std::cout << "Runnign";
 			vel2.y += deltaTs / 100;
-			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * -9.8 * 0.5, 0.0);
+			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * -9.8f * 0.5f, 0.0);
 		}
 		//Moving Up
 		if (travellingDown == false)
 		{
-			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * 9.8 * 0.5, 0.0);
+			pos2 += glm::vec3(vel2.x, _physics_object2->GetMass() * vel2.y * 9.8f * 0.5f, 0.0);
 			vel2.y -= deltaTs / 100;
 			if (vel2.y <= 0)
 			{
@@ -149,13 +159,20 @@ void Scene::Update(float deltaTs, Input* input)
 			}
 		}
 
+		if (PFG::SphereToSphereCollision(_dynamic_object->GetPosition(), _dynamic_object2->GetPosition(), _dynamic_object->GetBoundingRadius(), _dynamic_object2->GetBoundingRadius(), glm::vec3(0,0,0)))
+		{
+			std::cout << "yes";
+		}
+
 		_physics_object2->SetVelocity(vel2);
 		_physics_object2->SetPosition(pos2);
 		_kinematics_object->StartSimulation(_simulation_start);
 		_dynamic_object->StartSimulation(_simulation_start);
+		_dynamic_object2->StartSimulation(_simulation_start);
 	}
 	_kinematics_object->Update(deltaTs);
-	_dynamic_object->Update(deltaTs);
+	_dynamic_object->Update(deltaTs, 4);
+	_dynamic_object2->Update(deltaTs, 4);
 	_physics_object2->Update(deltaTs);
 	_level->Update(deltaTs);
 	_camera->Update(input);
@@ -169,6 +186,7 @@ void Scene::Draw()
 {
 	// Draw objects, giving the camera's position and projection
 	_dynamic_object->Draw(_viewMatrix, _projMatrix);
+	_dynamic_object2->Draw(_viewMatrix, _projMatrix);
 	_kinematics_object->Draw(_viewMatrix, _projMatrix);
 	_physics_object2->Draw(_viewMatrix, _projMatrix);
 	_level->Draw(_viewMatrix, _projMatrix);

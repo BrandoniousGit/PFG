@@ -30,7 +30,7 @@ public:
 	*   next procedure.
 	*   @param float deltaTs simulation time step length
 	*/
-	virtual void Update(float deltaTs);
+	virtual void Update(float deltaTs, int updateType);
 
 	/** Add force that acts on the object to the total force for physics computation
 	*  
@@ -43,6 +43,9 @@ public:
 	*   @param float deltaTs simulation time step length
 	*/
 	 void Euler(float deltaTs);
+	 void RungeKutta2(float deltaTs);
+	 void RungeKutta4(float deltaTs);
+	 void Verlet(float deltaTs);
 
 	/** Set force for the object
 	* @param glm::vec3 force a 3D vector for the force acting on the object
