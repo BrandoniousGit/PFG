@@ -22,5 +22,5 @@ namespace PFG
 	Sphere to sphere collision detection is calculated by finding the distance between the centre of the sphere c0
 	and the centre of the sphere c1. This function also finds the contact point cp on the sphere
 	*/
-	bool SphereToSphereCollision(const glm::vec3& c0, const glm::vec3 c1, float r1, float r2, glm::vec3& cp);
+	bool SphereToSphereCollision(const glm::vec3& c0, const glm::vec3& c1, float r1, float r2, glm::vec3& cp);
 }

@@ -1,4 +1,5 @@
 #include "Utility.h"
+#include <iostream>
 
 namespace PFG
 {
@@ -31,7 +32,7 @@ namespace PFG
 	}
 
 
-	bool SphereToSphereCollision(const glm::vec3& c0, const glm::vec3 c1, float r1, float r2, glm::vec3& cp)
+	bool SphereToSphereCollision(const glm::vec3& c0, const glm::vec3& c1, float r1, float r2, glm::vec3& cp)
 	{
 		float d = glm::length(c0 - c1);
 		glm::vec3 n;
@@ -40,6 +41,7 @@ namespace PFG
 		{
 			n = glm::normalize(c0 - c1);
 			cp = r1 * n;
+
 			return true;
 		}
 		return false;

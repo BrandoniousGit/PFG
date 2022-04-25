@@ -4,6 +4,7 @@
 
 #include "DynamicObject.h"
 #include "Utility.h"
+#include <iostream>
 
 DynamicObject::DynamicObject()
 {
@@ -47,7 +48,7 @@ void DynamicObject::Update(float deltaTs, int updateType)
 			_position.y = r;
 			//glm::vec3 bounceForce = glm::vec3(0.0f, 150.0f, 0.0f);
 			collisionImpulse = (-(1 + elasticity) * glm::dot(_velocity, floorNormal)) * _mass;
-			impulseForce = (collisionImpulse * floorNormal);// / deltaTs;
+			impulseForce = (collisionImpulse * floorNormal);//deltaTs;
 			//AddForce(impulseForce);
 			_velocity += impulseForce / _mass;
 			AddForce(contactForce);
@@ -68,7 +69,7 @@ void DynamicObject::Update(float deltaTs, int updateType)
 			Verlet(deltaTs);
 			break;
 		default:
-			Euler(deltaTs);
+			Verlet(deltaTs);
 			break;
 		}
 	}

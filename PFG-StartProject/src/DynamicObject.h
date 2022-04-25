@@ -2,6 +2,7 @@
 #define _DynamicObject_H_
 
 #include "GameObject.h"
+#include <string>
 
 /*! \brief Brief description.
 *  This physics dynamic object class is derived from the GameObject class, as a one type/class of game objects
@@ -47,6 +48,8 @@ public:
 	 void RungeKutta4(float deltaTs);
 	 void Verlet(float deltaTs);
 
+	 std::string name;
+
 	/** Set force for the object
 	* @param glm::vec3 force a 3D vector for the force acting on the object
 	*/
@@ -68,6 +71,8 @@ public:
 	* @param glm::vec3 vel a 3D vector for the velocity of the object
 	*/
 	void SetVelocity(const glm::vec3 vel) { _velocity = vel; }
+
+	void AddVelocity(const glm::vec3 vel) { _velocity += vel; }
 	/** Set scale for the object
 	* @param glm::vec3 vel a 3D vector for the scale of the object
 	*/
