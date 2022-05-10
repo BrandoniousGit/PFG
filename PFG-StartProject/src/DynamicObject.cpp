@@ -12,6 +12,7 @@ DynamicObject::DynamicObject()
 	_velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 	_mass = 1.0f;
 	_bRadius = 0.0f;
+	_elasticity = 1.0f;
 
 	_scale = glm::vec3(1.0f, 1.0f, 1.0f);
 	_start = false;
@@ -35,21 +36,64 @@ void DynamicObject::Update(float deltaTs, int updateType)
 		glm::vec3 gravityForce(0.0f, -9.8 * _mass * 0.1f, 0.0f);
 		AddForce(gravityForce);
 
-		float elasticity = 0.7f;
 		float r = GetBoundingRadius();
 
 		glm::vec3 pointOnFloor(0.0f, 0.0f, 0.0f);
 		glm::vec3 floorNormal(0.0f, 1.0f, 0.0f);
 
-		float d = PFG::DistanceToPlane(floorNormal, _position, pointOnFloor);
+		glm::vec3 wallXNormal(1.0f, 0.0f, 0.0f);
+		glm::vec3 wallZNormal(0.0f, 0.0f, 1.0f);
 
-		if (d <= r)
+		float dy = PFG::DistanceToPlane(floorNormal, _position, pointOnFloor);
+		float dx1 = PFG::DistanceToPlane(wallXNormal, _position, glm::vec3(-5.0f, 0.0f, 0.0f));
+		float dz1 = PFG::DistanceToPlane(wallZNormal, _position, glm::vec3(0.0f, 0.0f, -5.0f));
+
+		float dx2 = -PFG::DistanceToPlane(wallXNormal, _position, glm::vec3(5.0f, 0.0f, 0.0f));
+		float dz2 = -PFG::DistanceToPlane(wallZNormal, _position, glm::vec3(0.0f, 0.0f, 5.0f));
+
+		if (dx1 <= r)
+		{
+			collisionImpulse = (-(1 + _elasticity) * glm::dot(_velocity, wallXNormal)) * _mass;
+			impulseForce = (collisionImpulse * wallXNormal);
+
+			_velocity += impulseForce / _mass;
+			AddForce(contactForce);
+		}
+
+		if (dx2 <= r)
+		{
+			collisionImpulse = (-(1 + _elasticity) * glm::dot(_velocity, wallXNormal)) * _mass;
+			impulseForce = (collisionImpulse * wallXNormal);
+
+			_velocity += impulseForce / _mass;
+			AddForce(contactForce);
+		}
+
+		if (dy <= r)
 		{
 			_position.y = r;
-			//glm::vec3 bounceForce = glm::vec3(0.0f, 150.0f, 0.0f);
-			collisionImpulse = (-(1 + elasticity) * glm::dot(_velocity, floorNormal)) * _mass;
-			impulseForce = (collisionImpulse * floorNormal);//deltaTs;
-			//AddForce(impulseForce);
+
+			collisionImpulse = (-(1 + _elasticity) * glm::dot(_velocity, floorNormal)) * _mass;
+			impulseForce = (collisionImpulse * floorNormal);
+
+			_velocity += impulseForce / _mass;
+			AddForce(contactForce);
+		}
+
+		if (dz1 <= r)
+		{
+			collisionImpulse = (-(1 + _elasticity) * glm::dot(_velocity, wallZNormal)) * _mass;
+			impulseForce = (collisionImpulse * wallZNormal);
+
+			_velocity += impulseForce / _mass;
+			AddForce(contactForce);
+		}
+
+		if (dz2 <= r)
+		{
+			collisionImpulse = (-(1 + _elasticity) * glm::dot(_velocity, wallZNormal)) * _mass;
+			impulseForce = (collisionImpulse * wallZNormal);
+
 			_velocity += impulseForce / _mass;
 			AddForce(contactForce);
 		}

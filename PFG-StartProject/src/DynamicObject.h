@@ -105,6 +105,8 @@ public:
 	*/
 	void StartSimulation(bool start) { _start = start; }
 
+	float _elasticity;
+
 private:
 
 	/**Update the model matrix with the current position, orientation and scale

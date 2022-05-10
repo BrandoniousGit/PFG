@@ -49,7 +49,6 @@ private:
 	*/
 	//DynamicObject* Objects[0];
 	//DynamicObject* Objects[1];
-	KinematicsObject* _kinematics_object;
 	GameObject* _physics_object2;
 	std::vector<DynamicObject*> Objects;
 	/** An example game level in the scene

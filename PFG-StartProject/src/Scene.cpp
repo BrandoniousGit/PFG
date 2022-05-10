@@ -20,11 +20,12 @@ Scene::Scene()
 	_lightPosition = glm::vec3(10, 10, 0);
 
 	// Create a game object
-	_kinematics_object = new KinematicsObject();
 	_physics_object2 = new GameObject();
 	// Create a game level object
 	_level = new GameObject();
 
+	Objects.push_back(new DynamicObject());
+	Objects.push_back(new DynamicObject());
 	Objects.push_back(new DynamicObject());
 	Objects.push_back(new DynamicObject());
 
@@ -72,9 +73,10 @@ Scene::Scene()
 	// If you change the light's position you need to call this again
 	objectMaterial->SetLightPosition(_lightPosition);
 	// Tell the level object to use this material
-	_kinematics_object->SetMaterial(objectMaterial);
 	Objects[0]->SetMaterial(objectMaterial);
 	Objects[1]->SetMaterial(objectMaterial);
+	Objects[2]->SetMaterial(objectMaterial);
+	Objects[3]->SetMaterial(objectMaterial);
 	_physics_object2->SetMaterial(objectMaterial);
 
 	// Set the geometry for the object
@@ -84,7 +86,7 @@ Scene::Scene()
 	// Tell the game object to use this mesh
 	//Dynamic Object
 	Objects[0]->SetMesh(modelMesh);
-	Objects[0]->SetPosition(glm::vec3(-3.0f, 10.0f, 0.0f));
+	Objects[0]->SetPosition(glm::vec3(-3.1f, 10.0f, 0.0f));
 	Objects[0]->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
 	Objects[0]->SetMass(2.0f);
 	Objects[0]->SetBoundingRadius(Objects[0]->GetScale());
@@ -95,15 +97,26 @@ Scene::Scene()
 	Objects[1]->SetPosition(glm::vec3(-3.0f, 15.0f, 0.0f));
 	Objects[1]->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 	Objects[1]->SetMass(3.0f);
-	Objects[1]->SetBoundingRadius(Objects[0]->GetScale());
+	Objects[1]->SetBoundingRadius(Objects[1]->GetScale());
 	Objects[1]->name = "Sphere2";
 
-	//Kinematics Object 
-	_kinematics_object->SetMesh(modelMesh);
-	_kinematics_object->SetPosition(glm::vec3(0.0f, 5.0f, 0.0f));
-	_kinematics_object->SetScale(glm::vec3(0.3f, 0.3f, 0.3f));
+	//Another Dynamic Object
+	Objects[2]->SetMesh(modelMesh);
+	Objects[2]->SetPosition(glm::vec3(3.0f, 20.0f, -0.1f));
+	Objects[2]->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	Objects[2]->SetMass(3.0f);											  
+	Objects[2]->SetBoundingRadius(Objects[2]->GetScale());				  
+	Objects[2]->name = "Sphere3";
 
-	//Physics Object (Hard coded motion)
+	//Another Dynamic Object
+	Objects[3]->SetMesh(modelMesh);
+	Objects[3]->SetPosition(glm::vec3(4.0f, 7.0f, 0.1f));
+	Objects[3]->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	Objects[3]->SetMass(3.0f);
+	Objects[3]->SetBoundingRadius(Objects[3]->GetScale());
+	Objects[3]->name = "Sphere4";
+																		  
+	//Physics Object (Hard coded motion)								  
 	_physics_object2->SetMesh(modelMesh);
 	_physics_object2->SetPosition(3.0f, 50.0f, 0.0f);
 	_physics_object2->SetScale(0.5f, 0.5f, 0.5f);
@@ -115,12 +128,13 @@ Scene::Scene()
 Scene::~Scene()
 {
 	// You should neatly clean everything up here
-	delete _kinematics_object;
 	delete _level;
 	delete _camera;
 	delete _physics_object2;
 	delete Objects[0];
 	delete Objects[1];
+	delete Objects[2];
+	delete Objects[3];
 }
 
 bool travellingDown = true;
@@ -178,21 +192,25 @@ void Scene::Update(float deltaTs, Input* input)
 					float magnitude2 = glm::dot(Objects[j]->GetForce(), cp / Objects[j]->GetBoundingRadius());
 					glm::vec3 currentVel2 = cp / Objects[j]->GetBoundingRadius() * magnitude2;
 
-					Objects[i]->AddVelocity(currentVel1 * glm::vec3(2));
-					Objects[j]->AddVelocity(-currentVel2 * glm::vec3(2));
+					float restitution = Objects[i]->_elasticity * Objects[j]->_elasticity;
+
+					Objects[i]->AddVelocity(currentVel1 * restitution /2.0f);
+					Objects[j]->AddVelocity(-currentVel2 * restitution /2.0f);
 				}
 			}
 		}
-
 		_physics_object2->SetVelocity(vel2);
 		_physics_object2->SetPosition(pos2);
-		_kinematics_object->StartSimulation(_simulation_start);
 		Objects[0]->StartSimulation(_simulation_start);
 		Objects[1]->StartSimulation(_simulation_start);
+		Objects[2]->StartSimulation(_simulation_start);
+		Objects[3]->StartSimulation(_simulation_start);
 	}
-	_kinematics_object->Update(deltaTs);
-	Objects[0]->Update(deltaTs, 4);
-	Objects[1]->Update(deltaTs, 4);
+
+	Objects[0]->Update(deltaTs, 3);
+	Objects[1]->Update(deltaTs, 3);
+	Objects[2]->Update(deltaTs, 3);
+	Objects[3]->Update(deltaTs, 3);
 	_physics_object2->Update(deltaTs);
 	_level->Update(deltaTs);
 	_camera->Update(input);
@@ -207,9 +225,8 @@ void Scene::Draw()
 	// Draw objects, giving the camera's position and projection
 	Objects[0]->Draw(_viewMatrix, _projMatrix);
 	Objects[1]->Draw(_viewMatrix, _projMatrix);
-	_kinematics_object->Draw(_viewMatrix, _projMatrix);
+	Objects[2]->Draw(_viewMatrix, _projMatrix);
+	Objects[3]->Draw(_viewMatrix, _projMatrix);
 	_physics_object2->Draw(_viewMatrix, _projMatrix);
 	_level->Draw(_viewMatrix, _projMatrix);
 }
-
-
